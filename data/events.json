@@ -1,0 +1,21 @@
+[
+  {
+    "calendar": "Work",
+    "title": "Team standup",
+    "start": "2026-08-29T09:30:00-04:00",
+    "end": "2026-08-29T10:00:00-04:00"
+  },
+  {
+    "calendar": "Family",
+    "title": "School pickup",
+    "start": "2026-08-31T15:15:00-04:00",
+    "end": "2026-08-31T15:30:00-04:00"
+  },
+  {
+    "calendar": "Family",
+    "title": "Labor Day",
+    "start": "2026-09-07",
+    "end": "2026-09-08",
+    "all_day": true
+  }
+]

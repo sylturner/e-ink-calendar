@@ -1,0 +1,21 @@
+services:
+  eink-calendar:
+    build: .
+    ports:
+      - "4567:4567"
+    environment:
+      # Set this to require a bearer token from the e-ink display.
+      CALENDAR_API_TOKEN: ${CALENDAR_API_TOKEN:-}
+      # "file" is useful until Google Calendar is configured.
+      CALENDAR_SOURCE: ${CALENDAR_SOURCE:-file}
+      CALENDAR_EVENTS_FILE: /data/events.json
+      # mono (default), sans, or serif. Mono is clearest on most 1-bit panels.
+      CALENDAR_FONT: ${CALENDAR_FONT:-mono}
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID:-primary}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REFRESH_TOKEN: ${GOOGLE_REFRESH_TOKEN:-}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
