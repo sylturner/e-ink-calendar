@@ -1,0 +1,15 @@
+#!/bin/sh
+# Rebuild and restart the calendar service from a NAS shell.
+set -eu
+
+script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd)
+project_dir=$(CDPATH= cd "$script_dir/.." && pwd)
+cd "$project_dir"
+
+if ! docker compose version >/dev/null 2>&1; then
+  echo "Docker Compose v2 is required (expected: docker compose)." >&2
+  exit 1
+fi
+
+docker compose up --build --detach --remove-orphans
+docker compose ps
