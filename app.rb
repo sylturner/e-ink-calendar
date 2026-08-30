@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require "cgi"
 require "date"
 require "json"
-require "open3"
 require "sinatra/base"
 require "time"
+require_relative "lib/bitmap_font"
+require_relative "lib/monochrome_canvas"
 
 class CalendarApp < Sinatra::Base
   configure do
@@ -18,12 +18,8 @@ class CalendarApp < Sinatra::Base
     { status: "ok", source: CalendarEvents.source_name }.to_json
   end
 
-  get "/calendar.png" do
-    render_calendar("png")
-  end
-
   get "/calendar.bmp" do
-    render_calendar("bmp")
+    render_calendar
   end
 
   error ArgumentError do
@@ -37,7 +33,7 @@ class CalendarApp < Sinatra::Base
 
   private
 
-  def render_calendar(format)
+  def render_calendar
     require_token!
     width = integer_param("width", default: 800, min: 200, max: 2400)
     height = integer_param("height", default: 480, min: 200, max: 1600)
@@ -48,12 +44,12 @@ class CalendarApp < Sinatra::Base
 
     from_date, to_date = view_range(day, view, days)
     events = CalendarEvents.between(from_date, to_date)
-    image = CalendarRenderer.new(width:, height:, date: day, view:, days:, events:).public_send(format)
+    image = CalendarRenderer.new(width:, height:, date: day, view:, days:, events:).bmp
 
-    content_type format == "png" ? "image/png" : "image/bmp"
+    content_type "image/bmp"
     headers(
       "Cache-Control" => "no-store",
-      "Content-Disposition" => "inline; filename=calendar.#{format}",
+      "Content-Disposition" => "inline; filename=calendar.bmp",
       "X-Image-Bit-Depth" => "1"
     )
     image
@@ -214,52 +210,191 @@ class GoogleCalendarProvider
 end
 
 class CalendarRenderer
-  FONT_PRESETS = {
-    "mono" => "'DejaVu Sans Mono', monospace",
-    "sans" => "'DejaVu Sans', sans-serif",
-    "serif" => "'DejaVu Serif', serif"
-  }.freeze
   PADDING = 12
 
   def initialize(width:, height:, date:, view:, days:, events:)
     @width, @height, @date, @view, @days, @events = width, height, date, view, days, events
   end
 
-  def png
-    bilevel_png
-  end
-
   def bmp
-    output, error, status = Open3.capture3(
-      ENV.fetch("IMAGEMAGICK_COMMAND", "magick"), "png:-", "-define", "bmp:format=bmp3", "-compress", "none", "BMP3:-", stdin_data: bilevel_png
-    )
-    raise "ImageMagick failed to encode BMP: #{error.strip}" unless status.success?
-
-    output
+    canvas = MonochromeCanvas.new(@width, @height)
+    case @view
+    when "agenda" then render_agenda(canvas)
+    when "month" then render_month(canvas)
+    when "week" then render_week(canvas)
+    when "day" then render_day(canvas)
+    end
+    canvas.bmp
   end
 
   private
 
-  def bilevel_png
-    raster, error, status = Open3.capture3("rsvg-convert", "--format=png", stdin_data: svg)
-    raise "SVG rasterizer failed: #{error.strip}" unless status.success?
+  def render_month(canvas)
+    month_start = Date.new(@date.year, @date.month, 1)
+    grid_start = month_start - month_start.wday
+    month_end = month_start.next_month - 1
+    grid_end = month_end + (6 - month_end.wday)
+    weeks = ((grid_end - grid_start + 1) / 7).to_i
+    title_height = 42
+    weekday_height = 18
+    cell_width = (@width - (PADDING * 2)).fdiv(7)
+    cell_height = (@height - title_height - weekday_height - PADDING).fdiv(weeks)
+    event_size = [[cell_height * 0.18, 12].max, 16].min
+    max_events = [[((cell_height - 25) / (event_size + 2)).floor, 1].max, 4].min
+    draw_title(canvas, @date.strftime("%B %Y"))
 
-    output, error, status = Open3.capture3(
-      ENV.fetch("IMAGEMAGICK_COMMAND", "magick"), "png:-", "-colorspace", "Gray", "-threshold", "65%", "-type", "bilevel", "-define", "png:bit-depth=1", "png:-", stdin_data: raster
-    )
-    raise "ImageMagick failed to render calendar: #{error.strip}" unless status.success?
+    7.times do |index|
+      x = PADDING + (index * cell_width)
+      draw_text(canvas, x + (cell_width / 2), title_height + 13, Date::ABBR_DAYNAMES[index], small_size, bold: true, anchor: :middle)
+    end
 
-    output
-  end
-
-  def svg
-    case @view
-    when "agenda" then agenda_svg
-    when "month" then month_svg
-    when "week" then week_svg
-    when "day" then day_svg
+    (0...(weeks * 7)).each do |index|
+      date = grid_start + index
+      column = index % 7
+      row = index / 7
+      x = PADDING + (column * cell_width)
+      y = title_height + weekday_height + (row * cell_height)
+      canvas.stroke_rect(x, y, cell_width, cell_height)
+      draw_text(canvas, x + 4, y + 14, date.day, small_size, bold: date.month == @date.month)
+      event_lines_for(date, max_events, compact: true).each_with_index do |event_line, event_index|
+        draw_text(canvas, x + 4, y + 27 + (event_index * (event_size + 2)), truncate(event_line, event_capacity(cell_width, event_size)), event_size)
+      end
     end
   end
+
+  def render_week(canvas)
+    start_date = @date - @date.wday
+    title_height = 42
+    header_height = 25
+    column_width = (@width - (PADDING * 2)).fdiv(7)
+    column_height = @height - title_height - PADDING
+    event_size = [[column_width * 0.11, 12].max, 16].min
+    max_events = [[((column_height - header_height - 6) / (event_size + 3)).floor, 1].max, 12].min
+    draw_title(canvas, "Week of #{start_date.strftime("%-d %b %Y")}")
+
+    7.times do |index|
+      date = start_date + index
+      x = PADDING + (index * column_width)
+      y = title_height
+      canvas.stroke_rect(x, y, column_width, column_height)
+      draw_text(canvas, x + 4, y + 16, date.strftime("%a %-d"), small_size, bold: true)
+      event_lines_for(date, max_events, compact: true).each_with_index do |event_line, event_index|
+        draw_text(canvas, x + 4, y + header_height + (event_index * (event_size + 3)), truncate(event_line, event_capacity(column_width, event_size)), event_size)
+      end
+    end
+  end
+
+  def render_day(canvas)
+    all_day = events_on(@date).select(&:all_day)
+    timed = events_on(@date).reject(&:all_day).sort_by(&:starts_at)
+    title_height = 48
+    time_width = [@width * 0.16, 78].max
+    event_size = [[@height * 0.042, 12].max, 20].min
+    row_height = event_size + 10
+    draw_title(canvas, @date.strftime("%A, %-d %B %Y"))
+    y = title_height
+
+    all_day.each do |event|
+      canvas.fill_rect(PADDING, y, @width - (PADDING * 2), row_height)
+      draw_text(canvas, PADDING + 6, y + event_size + 1, event_label(event, @date), event_size, black: false)
+      y += row_height
+    end
+
+    timed.each do |event|
+      break if y + row_height > @height - PADDING
+
+      canvas.horizontal_line(PADDING, @width - PADDING, y)
+      draw_text(canvas, PADDING + 4, y + event_size + 2, event.starts_at.strftime("%-I:%M %p"), small_size, bold: true)
+      draw_text(canvas, PADDING + time_width, y + event_size + 2, truncate(event_label(event, @date), event_capacity(@width - time_width - PADDING, event_size)), event_size)
+      y += row_height
+    end
+    draw_text(canvas, PADDING + time_width, y + event_size + 2, "No events", event_size) if all_day.empty? && timed.empty?
+  end
+
+  def render_agenda(canvas)
+    row_height = (@height - 48 - PADDING).fdiv(@days)
+    event_size = 12
+    event_line_height = 14
+    date_width = [@width * 0.115, 92].max
+    end_date = @date + @days - 1
+    title = @days == 1 ? @date.strftime("Today") : "Next #{@days} Days"
+    canvas.fill_dithered_rect(0, 0, @width, 48, density: :subtle)
+    draw_text(canvas, PADDING, title_size + 4, title, title_size, bold: true)
+    draw_text(canvas, @width - PADDING, title_size + 4, "#{@date.strftime("%-d %b")} – #{end_date.strftime("%-d %b")}", 16, bold: true, anchor: :end)
+
+    @days.times do |index|
+      date = @date + index
+      y = 48 + (index * row_height)
+      canvas.horizontal_line(PADDING, @width - PADDING, y)
+      draw_text(canvas, PADDING + 3, y + 20, date.strftime("%a").upcase, 16, bold: true)
+      draw_text(canvas, PADDING + 3, y + 39, date.strftime("%-d %b"), 16)
+      if date == Date.today
+        badge_y = y + row_height - 23
+        badge_x = PADDING + 2
+        badge_width = 52
+        canvas.fill_rect(badge_x, badge_y, badge_width, 20)
+        draw_text(canvas, badge_x + (badge_width / 2), badge_y + 16, "TODAY", 14, bold: true, black: false, anchor: :middle)
+      end
+
+      draw_agenda_events(canvas, date, y, row_height, PADDING + date_width, @width - (PADDING * 2) - date_width, event_size, event_line_height)
+    end
+    canvas.horizontal_line(PADDING, @width - PADDING, @height - PADDING)
+  end
+
+  def draw_title(canvas, title)
+    draw_text(canvas, PADDING, title_size + 4, title, title_size, bold: true)
+    draw_text(canvas, @width - PADDING, title_size + 4, "Updated #{Time.now.strftime("%-I:%M %p")}", small_size, anchor: :end)
+  end
+
+  def draw_agenda_events(canvas, date, y, row_height, x, available_width, event_size, line_height)
+    lines_per_column = [(row_height - 8).fdiv(line_height).floor, 1].max
+    columns = events_on(date)
+      .group_by(&:calendar)
+      .sort_by { |calendar, _events| calendar.to_s.downcase }
+      .flat_map do |calendar, events|
+        events.sort_by { |event| [event.all_day ? 0 : 1, event.starts_at] }
+          .each_slice(lines_per_column)
+          .map { |slice| [calendar, slice] }
+      end
+    return if columns.empty?
+
+    column_width = available_width.fdiv(columns.length)
+    columns.each_with_index do |(calendar, events), column_index|
+      column_x = x + (column_index * column_width)
+      draw_agenda_column(canvas, column_x, y + 14, column_width, calendar, events, event_size, line_height)
+    end
+  end
+
+  def draw_agenda_column(canvas, x, baseline, width, calendar, events, event_size, line_height)
+    tag = calendar_tag_for(calendar)
+    tag_width = 24
+    title_x = x + tag_width + 4
+    title_width = width - tag_width - 6
+
+    events.each_with_index do |event, index|
+      event_y = baseline + (index * line_height)
+      if index.zero?
+        canvas.fill_rect(x, event_y - event_size + 2, tag_width, event_size + 2)
+        draw_text(canvas, x + (tag_width / 2), event_y, tag, event_size, bold: true, black: false, anchor: :middle)
+      end
+      label = agenda_event_label(event)
+      draw_text(canvas, title_x, event_y, truncate(label, event_capacity(title_width, event_size)), event_size, bold: true)
+    end
+  end
+
+  def agenda_event_label(event)
+    return event.title if event.all_day
+
+    "#{event.starts_at.strftime("%-I:%M%P")} #{event.title}"
+  end
+
+  def draw_text(canvas, x, y, content, size, bold: false, black: true, anchor: nil)
+    canvas.draw_text(x, y, content.to_s, font: bitmap_font(size, bold:), black:, anchor:)
+  end
+
+=begin
+  Legacy SVG renderer retained here temporarily as reference while comparing
+  layouts. It is not part of the application code path.
 
   def month_svg
     month_start = Date.new(@date.year, @date.month, 1)
@@ -426,6 +561,7 @@ class CalendarRenderer
       text(@width - PADDING, title_size + 4, "Updated #{Time.now.strftime("%-I:%M %p")}", "updated", anchor: "end")
     ]
   end
+=end
 
   def events_on(date)
     @events.select { |event| event_on_date?(event, date) }
@@ -445,19 +581,6 @@ class CalendarRenderer
     events.take(limit)
   end
 
-  def agenda_event_lines(x, y, event, date, available_width, event_size)
-    tag = calendar_tag(event)
-    tag_width = [tag.length * event_size * 0.5 + 9, 23].max
-    title_x = x + tag_width + 6
-    prefix = event.all_day || event.starts_at.to_date < date ? "" : "#{event.starts_at.strftime("%-I:%M%P")} "
-    title = truncate("#{prefix}#{event.title}", event_capacity(available_width - tag_width - 6, event_size))
-    [
-      rect(x, y - event_size + 3, tag_width, event_size + 2, "calendar-tag"),
-      text(x + (tag_width / 2), y, tag, "tag-text", anchor: "middle"),
-      text(title_x, y, title, "event")
-    ]
-  end
-
   def event_label(event, date, compact: false)
     prefix = compact ? "#{calendar_tag(event)} " : "[#{event.calendar}] "
     return "#{prefix}#{event.title}" if event.all_day || event.starts_at.to_date < date
@@ -466,7 +589,11 @@ class CalendarRenderer
   end
 
   def calendar_tag(event)
-    event.calendar.to_s.gsub(/[^[:alnum:]]/, "").upcase[0, 3].then { |tag| tag.empty? ? "CAL" : tag }
+    calendar_tag_for(event.calendar)
+  end
+
+  def calendar_tag_for(calendar)
+    calendar.to_s.gsub(/[^[:alnum:]]/, "").upcase[0, 3].then { |tag| tag.empty? ? "CAL" : tag }
   end
 
   def event_on_date?(event, date)
@@ -479,40 +606,8 @@ class CalendarRenderer
     text.length > length ? "#{text[0, length - 1]}…" : text
   end
 
-  def document(lines, styles)
-    <<~SVG
-      <svg xmlns="http://www.w3.org/2000/svg" width="#{@width}" height="#{@height}" viewBox="0 0 #{@width} #{@height}">
-        <rect width="100%" height="100%" fill="white" />
-        <style>
-          text { font-family: #{font_family}; fill: black; }
-          #{styles}
-        </style>
-        #{lines.join("\n")}
-      </svg>
-    SVG
-  end
-
-  def text(x, y, content, klass, anchor: nil)
-    anchor_attribute = anchor ? %( text-anchor="#{anchor}") : ""
-    %(<text x="#{x.round(2)}" y="#{y.round(2)}" class="#{klass}"#{anchor_attribute}>#{escape(content)}</text>)
-  end
-
-  def rect(x, y, width, height, klass)
-    %(<rect x="#{x.round(2)}" y="#{y.round(2)}" width="#{width.round(2)}" height="#{height.round(2)}" class="#{klass}" />)
-  end
-
-  def line(x1, y1, x2, y2, klass)
-    %(<line x1="#{x1.round(2)}" y1="#{y1.round(2)}" x2="#{x2.round(2)}" y2="#{y2.round(2)}" class="#{klass}" />)
-  end
-
   def title_size
     [[@width / 28, 20].max, 36].min
-  end
-
-  # Only use bundled, known-safe font stacks. The SVG is generated per request,
-  # so accepting an arbitrary environment value here would allow CSS injection.
-  def font_family
-    FONT_PRESETS.fetch(ENV.fetch("CALENDAR_FONT", "mono").downcase, FONT_PRESETS.fetch("mono"))
   end
 
   def small_size
@@ -520,10 +615,10 @@ class CalendarRenderer
   end
 
   def event_capacity(width, font_size)
-    [(width / (font_size * 0.56)).floor, 8].max
+    [(width / bitmap_font(font_size).average_width).floor, 8].max
   end
 
-  def escape(text)
-    CGI.escapeHTML(text.to_s)
+  def bitmap_font(size, bold: false)
+    BitmapFont.for_size(size, bold:)
   end
 end
