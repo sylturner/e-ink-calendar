@@ -11,6 +11,27 @@ docker compose up --build -d
 
 The calendar endpoint is `/calendar.bmp`. It returns an uncompressed, standard Windows BMP3 file with a 1-bit palette:
 
+### Rebuild on the NAS
+
+After pulling the latest changes in the project directory on the NAS, run:
+
+```sh
+./bin/rebuild-nas
+```
+
+The script finds the project directory even when invoked from elsewhere, builds
+the current source, recreates the `eink-calendar` service, removes obsolete
+Compose services, and prints its status. It expects Docker Compose v2, invoked
+as `docker compose`.
+
+To watch startup output afterward:
+
+```sh
+docker compose logs --follow --tail=100 eink-calendar
+```
+
+The calendar endpoint is `/calendar.bmp`. It returns an uncompressed, standard Windows BMP3 file with a 1-bit palette:
+
 ```sh
 curl -H "Authorization: Bearer YOUR_TOKEN" -o calendar.bmp \
   "http://NAS_HOSTNAME_OR_IP:4567/calendar.bmp?width=800&height=480"
