@@ -2,3 +2,7 @@
 .bundle
 vendor/bundle
 .*.swp
+.DS_Store
+
+# Local ESP32 network/service settings. Keep this file private.
+esp32/secrets.h

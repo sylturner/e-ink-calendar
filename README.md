@@ -51,6 +51,24 @@ CALENDAR_FONT=mono # default: DejaVu Sans Mono, terminal-style and most legible 
 
 `mono` is the recommended e-ink setting. The renderer still converts vector text into a 1-bit bitmap, but its wider, more even strokes survive that conversion better than the proportional face. Restart the container after changing this setting: `docker compose up -d`.
 
+## ESP32 e-paper display
+
+The Arduino sketch is at [`esp32/esp32.ino`](esp32/esp32.ino). It targets the 800×480 Waveshare 7.5-inch black-and-white panel on an ESP32-S3 with this wiring:
+
+| E-paper HAT | ESP32 GPIO |
+| --- | --- |
+| PWR | 6 |
+| BUSY | 7 |
+| RST | 8 |
+| DC | 9 |
+| CS | 10 |
+| DIN | 11 |
+| CLK | 12 |
+
+Install the `GxEPD2` library in Arduino IDE. Before opening/uploading the sketch, copy `esp32/secrets.h.example` to `esp32/secrets.h` and enter the Wi-Fi credentials, service URL, and optional API token. The private `secrets.h` file is ignored by Git.
+
+The display updates immediately at boot and then every six hours. A momentary pushbutton wired between GPIO 4 and GND changes the view in this order: agenda, day, week, month, then agenda again. GPIO 4 uses the ESP32's internal pull-up resistor, so no external resistor is required.
+
 ## Google Calendar
 
 The application already includes a Google Calendar provider. Set `CALENDAR_SOURCE=google` and the Google credentials in `.env`:
