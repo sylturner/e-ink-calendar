@@ -1,6 +1,6 @@
 # E-ink Calendar Service
 
-A Dockerized LAN service that returns a rendered calendar as a **1-bit PNG**. It is intended for an e-ink display that can fetch an HTTP image directly.
+A Dockerized LAN service that returns a rendered calendar as a **1-bit BMP3**. It is intended for an e-ink display that can fetch an HTTP image directly.
 
 ## Run it
 
@@ -9,23 +9,16 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-The sample source is `data/events.json`. From another device on the LAN, fetch the browser-friendly PNG:
-
-```sh
-curl -H "Authorization: Bearer YOUR_TOKEN" -o calendar.png \
-  "http://NAS_HOSTNAME_OR_IP:4567/calendar.png?width=800&height=480"
-```
-
-The same parameters are available from `/calendar.bmp`. It returns an uncompressed, standard Windows BMP3 file with a 1-bit palette, which is convenient for an embedded client:
+The calendar endpoint is `/calendar.bmp`. It returns an uncompressed, standard Windows BMP3 file with a 1-bit palette:
 
 ```sh
 curl -H "Authorization: Bearer YOUR_TOKEN" -o calendar.bmp \
   "http://NAS_HOSTNAME_OR_IP:4567/calendar.bmp?width=800&height=480"
 ```
 
-At the native panel resolution, the BMP is 48,062 bytes: a 62-byte BMP header/palette followed by 48,000 pixels bytes. Its rows are stored bottom-to-top as normal BMP data, so retain the PNG endpoint for browser previews and use the BMP endpoint only after the ESP32 parser accounts for that row order.
+At the native panel resolution, the BMP is 48,062 bytes: a 62-byte BMP header/palette followed by 48,000 pixel bytes. Its rows are stored bottom-to-top as normal BMP data, and the ESP32 parser accounts for that row order.
 
-Both image endpoints accept these query parameters:
+The calendar endpoint accepts these query parameters:
 
 | Parameter | Default | Notes |
 | --- | --- | --- |
@@ -35,21 +28,19 @@ Both image endpoints accept these query parameters:
 | `view` | `agenda` | `agenda`, `month`, `week`, or `day` |
 | `days` | `5` | Agenda only: 5–7 days beginning with `date` |
 
-The endpoint replies with `image/png` and `X-Image-Bit-Depth: 1`. Omit the authorization header only if `CALENDAR_API_TOKEN` is blank. Verify a response with `identify -verbose calendar.png` — it should report a 1-bit PNG.
+The endpoint replies with `image/bmp` and `X-Image-Bit-Depth: 1`. Omit the authorization header only if `CALENDAR_API_TOKEN` is blank. Verify a response with `identify -verbose calendar.bmp` — it should report a 1-bit BMP.
 
 `/healthz` is intentionally unauthenticated for Docker/NAS health checks. Set `CALENDAR_API_TOKEN` and send `Authorization: Bearer YOUR_TOKEN` for the calendar endpoint; leave it blank only on a trusted LAN.
 
-### Font preset
+### Bundled bitmap fonts
 
-Set `CALENDAR_FONT` in `.env` to choose the bundled font family:
-
-```dotenv
-CALENDAR_FONT=mono # default: DejaVu Sans Mono, terminal-style and most legible at 1-bit
-# CALENDAR_FONT=sans
-# CALENDAR_FONT=serif
-```
-
-`mono` is the recommended e-ink setting. The renderer still converts vector text into a 1-bit bitmap, but its wider, more even strokes survive that conversion better than the proportional face. Restart the container after changing this setting: `docker compose up -d`.
+The project also bundles the Terminus bitmap-font sources in
+[`assets/fonts/terminus`](assets/fonts/terminus). They are native, unscaled BDF
+faces in regular and bold weights at 12, 14, 16, 18, 20, 24, 28, and 32 pixels.
+They are intended for the direct 1-bit BMP renderer, where each glyph can be
+copied exactly onto the 800×480 panel grid. Terminus is licensed under the SIL
+Open Font License 1.1; its required license text is included alongside the
+font files as `OFL.TXT`.
 
 ## ESP32 e-paper display
 
@@ -94,12 +85,12 @@ The Google account that created the refresh token must have at least “See all 
 
 ### Views
 
-- `view=agenda` is the default: a high-legibility list of five days beginning today. Set `days=5`, `days=6`, or `days=7` to change its range.
+- `view=agenda` is the default: a high-legibility five-day board beginning today. Each day uses its full row to group events by calendar; busy calendars continue into an adjacent column rather than being capped at three events. Set `days=5`, `days=6`, or `days=7` to change its range.
 - `view=month` shows a conventional Sunday–Saturday month grid.
 - `view=week` shows a seven-column Sunday–Saturday schedule grid.
 - `view=day` shows one day as a readable agenda.
 
-All views render the source as a 1-bit PNG. The spacious agenda uses inverse three-letter calendar badges such as `SYL` and `FAM`; grid views use the same short tags to preserve room for event text.
+All views render directly into a 1-bit BMP framebuffer. The spacious agenda uses inverse three-letter calendar badges such as `SYL` and `FAM`; grid views use the same short tags to preserve room for event text.
 
 ## Development
 
@@ -125,7 +116,7 @@ CALENDAR_SOURCE=file CALENDAR_EVENTS_FILE="$PWD/data/events.json" bin/dev
 Use a fixed date while tuning the layout:
 
 ```text
-http://localhost:4568/calendar.png?view=agenda&date=2026-08-29&days=5&width=800&height=480
+http://localhost:4568/calendar.bmp?view=agenda&date=2026-08-29&days=5&width=800&height=480
 ```
 
 ## Event-file format

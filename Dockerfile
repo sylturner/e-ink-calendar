@@ -9,7 +9,7 @@ RUN bundle config set without 'development test' && bundle install
 
 FROM ruby:3.3-alpine
 
-RUN apk add --no-cache imagemagick librsvg rsvg-convert font-dejavu fontconfig tzdata libstdc++
+RUN apk add --no-cache tzdata libstdc++
 
 WORKDIR /app
 

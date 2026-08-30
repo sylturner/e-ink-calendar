@@ -9,8 +9,6 @@ services:
       # "file" is useful until Google Calendar is configured.
       CALENDAR_SOURCE: ${CALENDAR_SOURCE:-file}
       CALENDAR_EVENTS_FILE: /data/events.json
-      # mono (default), sans, or serif. Mono is clearest on most 1-bit panels.
-      CALENDAR_FONT: ${CALENDAR_FONT:-mono}
       GOOGLE_CALENDAR_LABEL: ${GOOGLE_CALENDAR_LABEL:-Primary}
       GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID:-primary}
       GOOGLE_CALENDARS: ${GOOGLE_CALENDARS:-}
