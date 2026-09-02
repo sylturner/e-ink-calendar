@@ -7,4 +7,11 @@ class Dashboard < ApplicationRecord
   validates :name, presence: true
   validates :grid_columns, numericality: { only_integer: true, equal_to: GRID_COLUMNS }
   validates :grid_rows, numericality: { only_integer: true, equal_to: GRID_ROWS }
+
+  def self.default
+    find_or_create_by!(name: "Default dashboard") do |dashboard|
+      dashboard.grid_columns = GRID_COLUMNS
+      dashboard.grid_rows = GRID_ROWS
+    end
+  end
 end

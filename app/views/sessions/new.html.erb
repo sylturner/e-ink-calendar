@@ -1,0 +1,12 @@
+<% content_for :title, "Unlock dashboard" %>
+
+<main class="login-page">
+  <%= form_with url: session_path, class: "login-card" do |form| %>
+    <h1>Dashboard</h1>
+    <p>Enter the local dashboard password.</p>
+
+    <%= form.label :password %>
+    <%= form.password_field :password, autofocus: true, required: true %>
+    <%= form.submit "Unlock" %>
+  <% end %>
+</main>

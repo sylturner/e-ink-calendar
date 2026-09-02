@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  resource :session, only: %i[new create destroy]
+
+  get "dashboard.bmp", to: "dashboard#bmp", as: :dashboard_bmp
+  get "dashboard", to: "dashboard#show", as: :current_dashboard
+  get "dashboard/edit", to: "dashboard#edit", as: :edit_current_dashboard
+
   resources :dashboard_items
   resources :dashboards
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

@@ -1,0 +1,32 @@
+<% content_for :title, "Dashboard" %>
+
+<main class="dashboard-page">
+  <header class="dashboard-toolbar">
+    <div>
+      <p class="eyebrow">800 × 480 · 1-bit display</p>
+      <h1><%= @dashboard.name %></h1>
+    </div>
+    <nav>
+      <%= link_to "Edit layout", edit_current_dashboard_path %>
+      <%= link_to "BMP frame", dashboard_bmp_path %>
+      <% if dashboard_password_configured? %>
+        <%= button_to "Lock", session_path, method: :delete, class: "link-button" %>
+      <% end %>
+    </nav>
+  </header>
+
+  <section class="dashboard-grid" aria-label="Dashboard preview" style="--grid-columns: <%= @dashboard.grid_columns %>; --grid-rows: <%= @dashboard.grid_rows %>">
+    <% @dashboard_items.each do |item| %>
+      <% panel = @panels_by_item_id.fetch(item.id) %>
+      <article class="dashboard-panel" style="grid-column: <%= item.grid_x + 1 %> / span <%= item.grid_width %>; grid-row: <%= item.grid_y + 1 %> / span <%= item.grid_height %>;">
+        <h2><%= panel.title %></h2>
+        <div class="panel-lines">
+          <% panel.lines.each do |line| %>
+            <p><%= line %></p>
+          <% end %>
+        </div>
+        <% if panel.footer.present? %><footer><%= panel.footer %></footer><% end %>
+      </article>
+    <% end %>
+  </section>
+</main>

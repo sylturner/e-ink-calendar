@@ -1,10 +1,79 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: #111;
+  background: #f4f1e9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+a, .link-button { color: #111; font: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.link-button { padding: 0; border: 0; background: none; cursor: pointer; }
+.flash { margin: 0; padding: .7rem 1rem; background: #111; color: #fff; }
+.flash--alert { background: #7a1515; }
+
+.dashboard-page { width: min(100% - 2rem, 1080px); margin: 1.5rem auto 3rem; }
+.dashboard-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.dashboard-toolbar h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 2rem); }
+.dashboard-toolbar nav { display: flex; align-items: center; flex-wrap: wrap; gap: .9rem; }
+.eyebrow { margin: 0 0 .25rem; font-size: .72rem; letter-spacing: .08em; }
+
+.dashboard-grid {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  grid-template-rows: repeat(var(--grid-rows), 1fr);
+  border: 2px solid #111;
+  background: #fff;
+}
+
+.dashboard-grid--editing {
+  background-image: linear-gradient(to right, #dedede 1px, transparent 1px), linear-gradient(to bottom, #dedede 1px, transparent 1px);
+  background-size: calc(100% / var(--grid-columns)) calc(100% / var(--grid-rows));
+}
+
+.dashboard-panel {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  margin: 6px;
+  padding: clamp(.45rem, 1vw, .8rem);
+  border: 2px solid #111;
+  background: #fff;
+  overflow: hidden;
+}
+
+.dashboard-panel h2 { margin: 0 0 .45rem; padding-bottom: .35rem; border-bottom: 1px solid #111; font-size: clamp(.72rem, 1.7vw, 1rem); }
+.panel-lines { min-height: 0; overflow: hidden; font-size: clamp(.62rem, 1.35vw, .82rem); line-height: 1.35; }
+.panel-lines p { margin: 0 0 .45rem; }
+.dashboard-panel footer { margin-top: auto; padding-top: .45rem; font-size: clamp(.55rem, 1.1vw, .7rem); }
+.panel-coordinate { margin: 0 0 .75rem; font-size: .75rem; }
+.panel-action { font-size: .8rem; }
+
+.component-list { margin-top: 1.5rem; }
+.component-list h2 { font-size: 1rem; }
+.component-list > div { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; padding: .7rem 0; border-bottom: 1px solid #b3b0a9; font-size: .85rem; }
+.component-list span { color: #555; }
+
+.login-page { display: grid; min-height: 100vh; place-items: center; padding: 1rem; }
+.login-card { display: grid; gap: .8rem; width: min(100%, 24rem); padding: 2rem; border: 2px solid #111; background: #fff; }
+.login-card h1, .login-card p { margin: 0; }
+.login-card input { min-height: 2.75rem; padding: .5rem; border: 1px solid #111; font: inherit; }
+.login-card input[type=submit] { background: #111; color: #fff; cursor: pointer; }
+
+form { max-width: 44rem; margin: 1.5rem auto; padding: 1rem; border: 1px solid #111; background: #fff; }
+form > div { margin-bottom: 1rem; }
+form label { font-weight: 700; }
+form input:not([type=checkbox]), form textarea, form select { width: 100%; margin-top: .35rem; padding: .5rem; border: 1px solid #111; font: inherit; }
+form textarea { min-height: 8rem; }
+.field-hint { margin: .35rem 0 0; font-size: .75rem; color: #555; }
+
+@media (max-width: 600px) {
+  .dashboard-page { width: min(100% - 1rem, 1080px); margin-top: .75rem; }
+  .dashboard-toolbar { align-items: start; flex-direction: column; }
+  .dashboard-panel { margin: 3px; padding: .3rem; border-width: 1px; }
+  .dashboard-panel h2 { margin-bottom: .2rem; padding-bottom: .2rem; }
+}

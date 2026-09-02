@@ -11,19 +11,17 @@
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :dashboard_id, style: "display: block" %>
-    <%= form.text_field :dashboard_id %>
-  </div>
+  <%= form.hidden_field :dashboard_id, value: Dashboard.default.id %>
 
   <div>
     <%= form.label :component_key, style: "display: block" %>
-    <%= form.text_field :component_key %>
+    <%= form.select :component_key, component_options %>
   </div>
 
   <div>
     <%= form.label :settings, style: "display: block" %>
-    <%= form.text_field :settings %>
+    <%= form.text_area :settings_json, rows: 7, spellcheck: false %>
+    <p class="field-hint">Use a JSON object. Component-specific controls will replace this temporary editor.</p>
   </div>
 
   <div>
