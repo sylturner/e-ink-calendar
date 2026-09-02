@@ -1,0 +1,19 @@
+{
+  "key": "silkscreen-regular-16",
+  "source": "vendor/eink_fonts/silkscreen/Silkscreen-Regular.ttf",
+  "source_sha256": "c845473330b94c2079ce9af01c51ac8ba2d99c24f4d14c039843bbb8e642ebd8",
+  "range": {
+    "first": 32,
+    "last": 126,
+    "fallback": 63
+  },
+  "cell": {
+    "width": 16,
+    "height": 16
+  },
+  "atlas": {
+    "path": "app/assets/images/eink_fonts/silkscreen-regular-16.png",
+    "columns": 16,
+    "rows": 6
+  }
+}
