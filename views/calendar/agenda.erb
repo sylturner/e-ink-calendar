@@ -1,0 +1,16 @@
+<section class="agenda">
+  <% renderer.agenda_days.each do |day| %>
+    <article class="agenda-row">
+      <div class="agenda-date">
+        <span class="weekday"><%= renderer.bitmap_text(day[:date].strftime("%a").upcase, size: 16, bold: true) %></span>
+        <span class="date"><%= renderer.bitmap_text(day[:date].strftime("%-d %b"), size: 16) %></span>
+        <% if day[:today] %><span class="today"><%= renderer.bitmap_text("TODAY", size: 16, bold: true) %></span><% end %>
+      </div>
+      <div class="agenda-events">
+        <% day[:events].each do |event| %>
+          <div class="agenda-event"><span class="calendar-tag"><%= renderer.bitmap_text(renderer.calendar_tag(event), size: 16, bold: true) %></span><span class="event-name"><%= renderer.bitmap_text(renderer.event_text(event), size: 16, bold: true) %></span></div>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+</section>

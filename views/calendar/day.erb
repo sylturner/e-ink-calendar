@@ -1,0 +1,9 @@
+<section class="day-view">
+  <% renderer.day_all_day_events.each do |event| %>
+    <article class="event-row all-day"><span class="event-time"><%= renderer.bitmap_text("ALL DAY", size: 16, bold: true) %></span><span class="event-name"><%= renderer.bitmap_text(event.title, size: 16) %></span></article>
+  <% end %>
+  <% renderer.day_timed_events.each do |event| %>
+    <article class="event-row"><span class="event-time"><%= renderer.bitmap_text(renderer.event_time(event), size: 16, bold: true) %></span><span class="event-name"><%= renderer.bitmap_text(event.title, size: 16) %></span></article>
+  <% end %>
+  <% if renderer.day_all_day_events.empty? && renderer.day_timed_events.empty? %><p class="empty"><%= renderer.bitmap_text("No events", size: 16) %></p><% end %>
+</section>

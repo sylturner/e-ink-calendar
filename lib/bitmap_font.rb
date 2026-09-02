@@ -8,9 +8,8 @@ require "erb"
 class BitmapFont
   Glyph = Data.define(:advance, :width, :height, :x_offset, :y_offset, :rows)
 
-  # Keep the screen's typographic scale on whole 8-pixel units. These BDF
-  # files are the exact pixel sizes drawn into the final bitmap.
-  FONT_SIZES = [16, 24, 32].freeze
+  # Every bundled BDF strike is available at its native, unscaled pixel size.
+  FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32].freeze
   ROOT = File.expand_path("../assets/fonts/terminus", __dir__)
 
   def self.for_size(requested_size, bold: false)

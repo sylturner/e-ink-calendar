@@ -54,11 +54,10 @@ The endpoint replies with `image/bmp` and `X-Image-Bit-Depth: 1`. Omit the autho
 ### Bundled bitmap fonts
 
 The project bundles Terminus bitmap-font sources in
-[`assets/fonts/terminus`](assets/fonts/terminus). The final renderer uses only
-16, 24, and 32 pixel faces—whole multiples of the 8-pixel type scale—so glyphs
-remain sharp on the 800×480 grid. Terminus is licensed under the SIL Open Font
-License 1.1; its required license text is included alongside the font files as
-`OFL.TXT`.
+[`assets/fonts/terminus`](assets/fonts/terminus). Every native, unscaled strike
+is available to the renderer: 12, 14, 16, 18, 20, 24, 28, and 32px. Terminus is
+licensed under the SIL Open Font License 1.1; its required license text is
+included alongside the font files as `OFL.TXT`.
 
 ## ESP32 e-paper display
 
@@ -112,7 +111,7 @@ All views are written in [`views/calendar.erb`](views/calendar.erb), with the re
 
 Open `/calendar.html` with the same query parameters as `/calendar.bmp` to design and inspect a view in a browser. The CSS source is also available at `/calendar.css`. The render endpoints reject `width` and `height` query parameters because the panel resolution is fixed.
 
-The final text renderer is intentionally fixed to the bundled Terminus bitmap faces (16, 24, and 32px). They are emitted as pixel-aligned inline SVG paths—not browser TTF text—so glyph metrics, centering, and edges are identical in `/calendar.html` and `/calendar.bmp`.
+The final text renderer uses the bundled Terminus bitmap faces at their native sizes (12–32px). They are emitted as pixel-aligned inline SVG paths—not browser TTF text—so glyph metrics, centering, and edges are identical in `/calendar.html` and `/calendar.bmp`.
 
 ## Development
 
