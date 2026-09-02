@@ -1,0 +1,11 @@
+<% content_for :title, "New dashboard item" %>
+
+<h1>New dashboard item</h1>
+
+<%= render "form", dashboard_item: @dashboard_item %>
+
+<br>
+
+<div>
+  <%= link_to "Back to dashboard items", dashboard_items_path %>
+</div>

@@ -1,0 +1,37 @@
+<% content_for :title, "Edit dashboard" %>
+
+<main class="dashboard-page">
+  <header class="dashboard-toolbar">
+    <div>
+      <p class="eyebrow">LAYOUT EDITOR · 8 × 8 GRID</p>
+      <h1><%= @dashboard.name %></h1>
+    </div>
+    <nav>
+      <%= link_to "Preview", current_dashboard_path %>
+      <%= link_to "Add component", new_dashboard_item_path %>
+    </nav>
+  </header>
+
+  <section class="dashboard-grid dashboard-grid--editing" aria-label="Dashboard layout" style="--grid-columns: <%= @dashboard.grid_columns %>; --grid-rows: <%= @dashboard.grid_rows %>">
+    <% @dashboard_items.each do |item| %>
+      <% panel = @panels_by_item_id.fetch(item.id) %>
+      <article class="dashboard-panel" style="grid-column: <%= item.grid_x + 1 %> / span <%= item.grid_width %>; grid-row: <%= item.grid_y + 1 %> / span <%= item.grid_height %>;">
+        <h2><%= panel.title %></h2>
+        <p class="panel-coordinate">x <%= item.grid_x %>, y <%= item.grid_y %> · <%= item.grid_width %> × <%= item.grid_height %></p>
+        <%= link_to "Configure", edit_dashboard_item_path(item), class: "panel-action" %>
+      </article>
+    <% end %>
+  </section>
+
+  <section class="component-list">
+    <h2>Components</h2>
+    <% @dashboard_items.each do |item| %>
+      <div>
+        <strong><%= item.component_key.humanize %></strong>
+        <span>x <%= item.grid_x %>, y <%= item.grid_y %> · <%= item.grid_width %> × <%= item.grid_height %></span>
+        <%= link_to "Edit", edit_dashboard_item_path(item) %>
+        <%= button_to "Remove", dashboard_item_path(item), method: :delete, form: { data: { turbo_confirm: "Remove this component?" } }, class: "link-button" %>
+      </div>
+    <% end %>
+  </section>
+</main>

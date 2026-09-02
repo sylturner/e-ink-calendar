@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Dashboard items" %>
+
+<h1>Dashboard items</h1>
+
+<div id="dashboard_items">
+  <% @dashboard_items.each do |dashboard_item| %>
+    <%= render dashboard_item %>
+    <p>
+      <%= link_to "Show this dashboard item", dashboard_item %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New dashboard item", new_dashboard_item_path %>

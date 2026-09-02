@@ -1,0 +1,55 @@
+<%= form_with(model: dashboard_item) do |form| %>
+  <% if dashboard_item.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(dashboard_item.errors.count, "error") %> prohibited this dashboard_item from being saved:</h2>
+
+      <ul>
+        <% dashboard_item.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form.hidden_field :dashboard_id, value: Dashboard.default.id %>
+
+  <div>
+    <%= form.label :component_key, style: "display: block" %>
+    <%= form.select :component_key, component_options %>
+  </div>
+
+  <div>
+    <%= form.label :settings, style: "display: block" %>
+    <%= form.text_area :settings_json, rows: 7, spellcheck: false %>
+    <p class="field-hint">Use a JSON object. Component-specific controls will replace this temporary editor.</p>
+  </div>
+
+  <div>
+    <%= form.label :grid_x, style: "display: block" %>
+    <%= form.number_field :grid_x %>
+  </div>
+
+  <div>
+    <%= form.label :grid_y, style: "display: block" %>
+    <%= form.number_field :grid_y %>
+  </div>
+
+  <div>
+    <%= form.label :grid_width, style: "display: block" %>
+    <%= form.number_field :grid_width %>
+  </div>
+
+  <div>
+    <%= form.label :grid_height, style: "display: block" %>
+    <%= form.number_field :grid_height %>
+  </div>
+
+  <div>
+    <%= form.label :enabled, style: "display: block" %>
+    <%= form.checkbox :enabled %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

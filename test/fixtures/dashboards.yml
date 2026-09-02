@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: Default dashboard
+  grid_columns: 8
+  grid_rows: 8
+
+two:
+  name: Alternate dashboard
+  grid_columns: 8
+  grid_rows: 8

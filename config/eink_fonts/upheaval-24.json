@@ -1,0 +1,24 @@
+{
+  "key": "upheaval-24",
+  "source": "vendor/eink_fonts/upheaval/upheavtt.ttf",
+  "source_sha256": "60ddb78d3a285da2bb7cab2edb27bcf49a5b78180f5e36666fbf7b378dbce29c",
+  "range": {
+    "first": 32,
+    "last": 126,
+    "fallback": 63
+  },
+  "raster": {
+    "point_size": 24,
+    "crop_x": 0,
+    "crop_y": 5
+  },
+  "cell": {
+    "width": 16,
+    "height": 16
+  },
+  "atlas": {
+    "path": "app/assets/images/eink_fonts/upheaval-24.png",
+    "columns": 16,
+    "rows": 6
+  }
+}
