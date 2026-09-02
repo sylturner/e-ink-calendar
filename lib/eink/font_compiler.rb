@@ -7,15 +7,67 @@ require "tmpdir"
 module Eink
   class FontCompiler
     GlyphSet = (32..126).freeze
-    Font = Data.define(:key, :source, :point_size, :cell_width, :cell_height, :columns)
+    Font = Data.define(:key, :source, :point_size, :cell_width, :cell_height, :crop_x, :crop_y, :columns)
 
     FONTS = [
       Font.new(
         key: "silkscreen-regular-16",
         source: Rails.root.join("vendor/eink_fonts/silkscreen/Silkscreen-Regular.ttf"),
-        point_size: 32,
+        point_size: 20,
+        cell_width: 14,
+        cell_height: 16,
+        crop_x: 2,
+        crop_y: 6,
+        columns: 16
+      ),
+      Font.new(
+        key: "pixelify-sans-20",
+        source: Rails.root.join("vendor/eink_fonts/pixelify_sans/PixelifySans[wght].ttf"),
+        point_size: 20,
+        cell_width: 14,
+        cell_height: 18,
+        crop_x: 1,
+        crop_y: 5,
+        columns: 16
+      ),
+      Font.new(
+        key: "pixel-operator-8-16",
+        source: Rails.root.join("vendor/eink_fonts/pixel_operator/PixelOperator8.ttf"),
+        point_size: 16,
+        cell_width: 15,
+        cell_height: 16,
+        crop_x: 2,
+        crop_y: 0,
+        columns: 16
+      ),
+      Font.new(
+        key: "pixel-operator-8-bold-16",
+        source: Rails.root.join("vendor/eink_fonts/pixel_operator/PixelOperator8-Bold.ttf"),
+        point_size: 16,
+        cell_width: 15,
+        cell_height: 16,
+        crop_x: 2,
+        crop_y: 0,
+        columns: 16
+      ),
+      Font.new(
+        key: "vhs-gothic-16",
+        source: Rails.root.join("vendor/eink_fonts/vhs_gothic/vhs-gothic.ttf"),
+        point_size: 16,
+        cell_width: 12,
+        cell_height: 16,
+        crop_x: 1,
+        crop_y: 2,
+        columns: 16
+      ),
+      Font.new(
+        key: "upheaval-24",
+        source: Rails.root.join("vendor/eink_fonts/upheaval/upheavtt.ttf"),
+        point_size: 24,
         cell_width: 16,
         cell_height: 16,
+        crop_x: 0,
+        crop_y: 5,
         columns: 16
       )
     ].freeze
@@ -57,10 +109,14 @@ module Eink
 
     def render_glyph!(directory, codepoint)
       path = File.join(directory, format("%03d.png", codepoint))
+      character_path = File.join(directory, format("%03d.txt", codepoint))
+      File.binwrite(character_path, codepoint.chr)
+
       run!(
-        "magick", "-size", "#{font.cell_width}x#{font.cell_height}", "xc:white",
-        "+antialias", "-font", font.source.to_s, "-pointsize", font.point_size.to_s,
-        "-fill", "black", "-gravity", "NorthWest", "-annotate", "+0+0", codepoint.chr,
+        "magick", "-background", "white", "-fill", "black", "+antialias",
+        "-font", font.source.to_s, "-pointsize", font.point_size.to_s, "label:@#{character_path}",
+        "-crop", "#{font.cell_width}x#{font.cell_height}+#{font.crop_x}+#{font.crop_y}", "+repage",
+        "-gravity", "NorthWest", "-extent", "#{font.cell_width}x#{font.cell_height}",
         "-type", "bilevel", path
       )
       path
@@ -88,6 +144,7 @@ module Eink
         source: font.source.relative_path_from(Rails.root).to_s,
         source_sha256: Digest::SHA256.file(font.source).hexdigest,
         range: { first: GlyphSet.begin, last: GlyphSet.end, fallback: "?".ord },
+        raster: { point_size: font.point_size, crop_x: font.crop_x, crop_y: font.crop_y },
         cell: { width: font.cell_width, height: font.cell_height },
         atlas: { path: atlas_path.relative_path_from(output_root).to_s, columns: font.columns, rows: }
       ) + "\n")

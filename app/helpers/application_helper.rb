@@ -1,21 +1,20 @@
 module ApplicationHelper
-  def pixel_text(value, scale:, label: value)
-    text = Eink::PixelFont.display_text(value)
-    width = [ text.length * Eink::PixelFont.advance(scale), 1 ].max
-    height = Eink::PixelFont::GLYPH_HEIGHT * scale
-    pixels = Eink::PixelFont.each_pixel(text, scale:).map do |x, y|
-      tag.rect(x:, y:, width: scale, height: scale)
+  def eink_text(value, font:, label: value)
+    glyphs = font.glyphs(value).map do |glyph|
+      tag.span(
+        "",
+        class: "eink-glyph",
+        style: "background-position: -#{glyph.x}px -#{glyph.y}px",
+        aria: { hidden: true }
+      )
     end
 
-    tag.svg(
-      safe_join(pixels),
-      class: "pixel-text",
-      viewBox: "0 0 #{width} #{height}",
-      width:,
-      height:,
+    tag.span(
+      safe_join(glyphs),
+      class: "eink-text",
+      style: "--eink-atlas: url(#{asset_path(font.asset_path)}); --eink-atlas-width: #{font.atlas_width}px; --eink-atlas-height: #{font.atlas_height}px; --eink-cell-width: #{font.cell_width}px; --eink-cell-height: #{font.cell_height}px",
       role: "img",
-      aria: { label: label },
-      "shape-rendering": "crispEdges"
+      aria: { label: label }
     )
   end
 end

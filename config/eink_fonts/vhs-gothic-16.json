@@ -1,0 +1,24 @@
+{
+  "key": "vhs-gothic-16",
+  "source": "vendor/eink_fonts/vhs_gothic/vhs-gothic.ttf",
+  "source_sha256": "4605d1356174dadff15538dc9fa3384bcbcf326cc851b37f14413c3854b03837",
+  "range": {
+    "first": 32,
+    "last": 126,
+    "fallback": 63
+  },
+  "raster": {
+    "point_size": 16,
+    "crop_x": 1,
+    "crop_y": 2
+  },
+  "cell": {
+    "width": 12,
+    "height": 16
+  },
+  "atlas": {
+    "path": "app/assets/images/eink_fonts/vhs-gothic-16.png",
+    "columns": 16,
+    "rows": 6
+  }
+}

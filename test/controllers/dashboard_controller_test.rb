@@ -6,8 +6,10 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "section.dashboard-grid"
-    assert_select "section.dashboard-grid svg.pixel-text[shape-rendering='crispEdges']", minimum: 1
-    assert_select "canvas.pixel-text", false
+    assert_select "section.dashboard-grid .eink-text[role='img'][style*='pixelify-sans-20']", minimum: 1
+    assert_select "section.dashboard-grid .eink-glyph[aria-hidden='true'][style*='background-position']", minimum: 1
+    assert_select "section.dashboard-grid svg.pixel-text", false
+    assert_select "select[name='dashboard[theme]'] option", count: Eink::Theme::PRESETS.size
   end
 
   test "serves an ESP32-compatible bitmap frame" do

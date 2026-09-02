@@ -9,6 +9,10 @@
     <nav>
       <%= link_to "Edit layout", edit_current_dashboard_path %>
       <%= link_to "BMP frame", dashboard_bmp_path %>
+      <%= form_with model: @dashboard, class: "theme-picker" do |form| %>
+        <%= form.label :theme, "Theme" %>
+        <%= form.select :theme, Eink::Theme.options, {}, onchange: "this.form.requestSubmit()" %>
+      <% end %>
       <% if dashboard_password_configured? %>
         <%= button_to "Lock", session_path, method: :delete, class: "link-button" %>
       <% end %>
@@ -16,24 +20,28 @@
   </header>
 
   <section class="dashboard-grid" aria-label="Dashboard preview" style="--grid-columns: <%= @dashboard.grid_columns %>; --grid-rows: <%= @dashboard.grid_rows %>">
+    <% theme = Eink::Theme.fetch(@dashboard.theme) %>
+    <% title_font = Eink::FontAtlas.fetch(theme.fetch(:title_font)) %>
+    <% body_font = Eink::FontAtlas.fetch(theme.fetch(:body_font)) %>
+    <% footer_font = Eink::FontAtlas.fetch(theme.fetch(:footer_font)) %>
     <% @dashboard_items.each do |item| %>
       <% panel = @panels_by_item_id.fetch(item.id) %>
       <% text_width = (item.grid_width * Eink::BmpRenderer::CELL_WIDTH) - 32 %>
       <article class="dashboard-panel" style="grid-column: <%= item.grid_x + 1 %> / span <%= item.grid_width %>; grid-row: <%= item.grid_y + 1 %> / span <%= item.grid_height %>;">
         <h2>
-          <% title = Eink::PixelFont.fit(panel.title, max_width: text_width, scale: Eink::BmpRenderer::TEXT_SCALE) %>
-          <%= pixel_text(title, scale: Eink::BmpRenderer::TEXT_SCALE, label: panel.title) %>
+          <% title = title_font.fit(panel.title, max_width: text_width) %>
+          <%= eink_text(title, font: title_font, label: panel.title) %>
         </h2>
         <div class="panel-lines">
           <% panel.lines.each do |line| %>
-            <% Eink::PixelFont.wrap(line, max_width: text_width, scale: Eink::BmpRenderer::TEXT_SCALE).each do |wrapped_line| %>
-              <p><%= pixel_text(wrapped_line, scale: Eink::BmpRenderer::TEXT_SCALE) %></p>
+            <% body_font.wrap(line, max_width: text_width).each do |wrapped_line| %>
+              <p><%= eink_text(wrapped_line, font: body_font) %></p>
             <% end %>
           <% end %>
         </div>
         <% if panel.footer.present? %>
-          <% footer = Eink::PixelFont.fit(panel.footer, max_width: text_width, scale: Eink::BmpRenderer::TEXT_SCALE) %>
-          <footer><%= pixel_text(footer, scale: Eink::BmpRenderer::TEXT_SCALE, label: panel.footer) %></footer>
+          <% footer = footer_font.fit(panel.footer, max_width: text_width) %>
+          <footer><%= eink_text(footer, font: footer_font, label: panel.footer) %></footer>
         <% end %>
       </article>
     <% end %>

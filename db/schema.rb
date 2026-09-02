@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_025660) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_150000) do
   create_table "dashboard_items", force: :cascade do |t|
     t.string "component_key", null: false
     t.datetime "created_at", null: false
@@ -31,6 +31,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_025660) do
     t.integer "grid_columns", default: 8, null: false
     t.integer "grid_rows", default: 8, null: false
     t.string "name", null: false
+    t.string "theme", default: "pixelify", null: false
     t.datetime "updated_at", null: false
   end
 

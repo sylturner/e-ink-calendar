@@ -1,0 +1,24 @@
+{
+  "key": "pixelify-sans-20",
+  "source": "vendor/eink_fonts/pixelify_sans/PixelifySans[wght].ttf",
+  "source_sha256": "9ba86cd010a4de309d263ceff8e8044092c9db7efda869620cb9ff1c4389e8a5",
+  "range": {
+    "first": 32,
+    "last": 126,
+    "fallback": 63
+  },
+  "raster": {
+    "point_size": 20,
+    "crop_x": 1,
+    "crop_y": 5
+  },
+  "cell": {
+    "width": 14,
+    "height": 18
+  },
+  "atlas": {
+    "path": "app/assets/images/eink_fonts/pixelify-sans-20.png",
+    "columns": 16,
+    "rows": 6
+  }
+}

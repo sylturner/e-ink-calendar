@@ -5,6 +5,7 @@ class Dashboard < ApplicationRecord
   has_many :dashboard_items, dependent: :destroy
 
   validates :name, presence: true
+  validates :theme, inclusion: { in: Eink::Theme::PRESETS.keys }
   validates :grid_columns, numericality: { only_integer: true, equal_to: GRID_COLUMNS }
   validates :grid_rows, numericality: { only_integer: true, equal_to: GRID_ROWS }
 

@@ -1,0 +1,24 @@
+{
+  "key": "pixel-operator-8-16",
+  "source": "vendor/eink_fonts/pixel_operator/PixelOperator8.ttf",
+  "source_sha256": "5cccb9ef6cf18977b6e5721d49a1a6e78dd6a6f1c4f69537470f7dc1dc829ffc",
+  "range": {
+    "first": 32,
+    "last": 126,
+    "fallback": 63
+  },
+  "raster": {
+    "point_size": 16,
+    "crop_x": 2,
+    "crop_y": 0
+  },
+  "cell": {
+    "width": 15,
+    "height": 16
+  },
+  "atlas": {
+    "path": "app/assets/images/eink_fonts/pixel-operator-8-16.png",
+    "columns": 16,
+    "rows": 6
+  }
+}

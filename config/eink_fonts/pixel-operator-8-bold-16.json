@@ -1,0 +1,24 @@
+{
+  "key": "pixel-operator-8-bold-16",
+  "source": "vendor/eink_fonts/pixel_operator/PixelOperator8-Bold.ttf",
+  "source_sha256": "b46a109cdac6c2f7acb4a57451dc3c8f7e2d391b871500270eadf139f0ac906e",
+  "range": {
+    "first": 32,
+    "last": 126,
+    "fallback": 63
+  },
+  "raster": {
+    "point_size": 16,
+    "crop_x": 2,
+    "crop_y": 0
+  },
+  "cell": {
+    "width": 15,
+    "height": 16
+  },
+  "atlas": {
+    "path": "app/assets/images/eink_fonts/pixel-operator-8-bold-16.png",
+    "columns": 16,
+    "rows": 6
+  }
+}

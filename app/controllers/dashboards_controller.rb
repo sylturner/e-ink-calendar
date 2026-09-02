@@ -65,6 +65,6 @@ class DashboardsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def dashboard_params
-      params.expect(dashboard: [ :name, :grid_columns, :grid_rows ])
+      params.expect(dashboard: [ :name, :grid_columns, :grid_rows, :theme ])
     end
 end

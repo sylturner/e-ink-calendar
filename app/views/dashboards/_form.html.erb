@@ -17,6 +17,11 @@
   </div>
 
   <div>
+    <%= form.label :theme, style: "display: block" %>
+    <%= form.select :theme, Eink::Theme.options %>
+  </div>
+
+  <div>
     <%= form.label :grid_columns, style: "display: block" %>
     <%= form.number_field :grid_columns %>
   </div>
