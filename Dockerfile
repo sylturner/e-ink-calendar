@@ -9,7 +9,10 @@ RUN bundle config set without 'development test' && bundle install
 
 FROM ruby:3.3-alpine
 
-RUN apk add --no-cache tzdata libstdc++
+RUN apk add --no-cache chromium font-dejavu imagemagick tzdata libstdc++
+
+# Ferrum uses this explicit path instead of relying on browser auto-discovery.
+ENV BROWSER_PATH=/usr/bin/chromium-browser
 
 WORKDIR /app
 

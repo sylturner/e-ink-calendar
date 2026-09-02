@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=800, height=480, initial-scale=1">
+    <style><%= renderer.stylesheet %></style>
+  </head>
+  <body>
+    <main class="calendar" style="--agenda-days: <%= renderer.days || 1 %>">
+      <header class="masthead">
+        <h1><%= renderer.bitmap_text(renderer.heading, size: 32, bold: true) %></h1>
+        <p class="subtitle"><%= renderer.bitmap_text(renderer.subtitle, size: 16, bold: true) %></p>
+      </header>
+
+      <%= renderer.view_partial %>
+    </main>
+  </body>
+</html>

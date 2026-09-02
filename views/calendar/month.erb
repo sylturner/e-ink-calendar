@@ -1,0 +1,11 @@
+<section class="month">
+  <div class="weekday-labels"><% Date::ABBR_DAYNAMES.each do |name| %><span><%= renderer.bitmap_text(name, size: 16, bold: true) %></span><% end %></div>
+  <div class="month-grid">
+    <% renderer.month_weeks.flatten.each do |day| %>
+      <article class="day-cell <%= "outside" unless day[:current_month] %>">
+        <div class="day-number"><%= renderer.bitmap_text(day[:date].day.to_s, size: 16, bold: true) %></div>
+        <ul class="event-list"><% day[:events].each do |event| %><li><%= renderer.bitmap_text(event, size: 16) %></li><% end %></ul>
+      </article>
+    <% end %>
+  </div>
+</section>

@@ -34,7 +34,7 @@ The calendar endpoint is `/calendar.bmp`. It returns an uncompressed, standard W
 
 ```sh
 curl -H "Authorization: Bearer YOUR_TOKEN" -o calendar.bmp \
-  "http://NAS_HOSTNAME_OR_IP:4567/calendar.bmp?width=800&height=480"
+  "http://NAS_HOSTNAME_OR_IP:4567/calendar.bmp"
 ```
 
 At the native panel resolution, the BMP is 48,062 bytes: a 62-byte BMP header/palette followed by 48,000 pixel bytes. Its rows are stored bottom-to-top as normal BMP data, and the ESP32 parser accounts for that row order.
@@ -43,8 +43,6 @@ The calendar endpoint accepts these query parameters:
 
 | Parameter | Default | Notes |
 | --- | --- | --- |
-| `width` | `800` | 200–2400 pixels |
-| `height` | `480` | 200–1600 pixels |
 | `date` | today | Anchor ISO date, e.g. `2026-08-29` |
 | `view` | `agenda` | `agenda`, `month`, `week`, or `day` |
 | `days` | `5` | Agenda only: 5–7 days beginning with `date` |
@@ -55,13 +53,11 @@ The endpoint replies with `image/bmp` and `X-Image-Bit-Depth: 1`. Omit the autho
 
 ### Bundled bitmap fonts
 
-The project also bundles the Terminus bitmap-font sources in
-[`assets/fonts/terminus`](assets/fonts/terminus). They are native, unscaled BDF
-faces in regular and bold weights at 12, 14, 16, 18, 20, 24, 28, and 32 pixels.
-They are intended for the direct 1-bit BMP renderer, where each glyph can be
-copied exactly onto the 800×480 panel grid. Terminus is licensed under the SIL
-Open Font License 1.1; its required license text is included alongside the
-font files as `OFL.TXT`.
+The project bundles Terminus bitmap-font sources in
+[`assets/fonts/terminus`](assets/fonts/terminus). Every native, unscaled strike
+is available to the renderer: 12, 14, 16, 18, 20, 24, 28, and 32px. Terminus is
+licensed under the SIL Open Font License 1.1; its required license text is
+included alongside the font files as `OFL.TXT`.
 
 ## ESP32 e-paper display
 
@@ -111,7 +107,11 @@ The Google account that created the refresh token must have at least “See all 
 - `view=week` shows a seven-column Sunday–Saturday schedule grid.
 - `view=day` shows one day as a readable agenda.
 
-All views render directly into a 1-bit BMP framebuffer. The spacious agenda uses inverse three-letter calendar badges such as `SYL` and `FAM`; grid views use the same short tags to preserve room for event text.
+All views are written in [`views/calendar.erb`](views/calendar.erb), with the reusable design system in [`views/calendar.css`](views/calendar.css). Rendering is fixed at the panel's native 800×480 resolution. ERB emits inline SVG glyphs directly from the bundled Terminus 1-bit bitmap faces, so the browser preview and Chromium screenshot contain the same pixels. ImageMagick then applies a hard threshold (not dithering) to that single screenshot, producing a BMP3 that contains only `#000` and `#FFF`. The ESP32 still receives the same 48,062-byte image format.
+
+Open `/calendar.html` with the same query parameters as `/calendar.bmp` to design and inspect a view in a browser. The CSS source is also available at `/calendar.css`. The render endpoints reject `width` and `height` query parameters because the panel resolution is fixed.
+
+The final text renderer uses the bundled Terminus bitmap faces at their native sizes (12–32px). They are emitted as pixel-aligned inline SVG paths—not browser TTF text—so glyph metrics, centering, and edges are identical in `/calendar.html` and `/calendar.bmp`.
 
 ## Development
 
@@ -137,7 +137,7 @@ CALENDAR_SOURCE=file CALENDAR_EVENTS_FILE="$PWD/data/events.json" bin/dev
 Use a fixed date while tuning the layout:
 
 ```text
-http://localhost:4568/calendar.bmp?view=agenda&date=2026-08-29&days=5&width=800&height=480
+http://localhost:4568/calendar.bmp?view=agenda&date=2026-08-29&days=5
 ```
 
 ## Event-file format

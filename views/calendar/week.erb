@@ -1,0 +1,8 @@
+<section class="week">
+  <% renderer.week_days.each do |day| %>
+    <article class="day-cell">
+      <div class="week-heading"><%= renderer.bitmap_text(day[:date].strftime("%a %-d"), size: 16, bold: true) %></div>
+      <ul class="event-list"><% day[:events].each do |event| %><li><%= renderer.bitmap_text(event, size: 16) %></li><% end %></ul>
+    </article>
+  <% end %>
+</section>
