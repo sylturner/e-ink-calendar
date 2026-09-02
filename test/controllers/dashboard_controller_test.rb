@@ -6,6 +6,8 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "section.dashboard-grid"
+    assert_select "section.dashboard-grid svg.pixel-text[shape-rendering='crispEdges']", minimum: 1
+    assert_select "canvas.pixel-text", false
   end
 
   test "serves an ESP32-compatible bitmap frame" do

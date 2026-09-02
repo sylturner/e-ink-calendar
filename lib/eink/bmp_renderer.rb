@@ -9,6 +9,7 @@ module Eink
     ROW_BYTES = WIDTH / 8
     PIXEL_BYTES = ROW_BYTES * HEIGHT
     FILE_HEADER_BYTES = 62
+    TEXT_SCALE = 2
 
     def initialize(dashboard)
       @dashboard = dashboard
@@ -39,25 +40,24 @@ module Eink
       height = (item.grid_height * CELL_HEIGHT) - 12
       image = image.draw_rect([ 0 ], x, y, width, height, fill: false)
       image = image.draw_rect([ 0 ], x + 8, y + 29, width - 16, 1, fill: true)
-      image = draw_text(image, panel.title, x + 10, y + 8, size: 15)
+      text_width = width - 20
+      image = draw_text(image, PixelFont.fit(panel.title, max_width: text_width, scale: TEXT_SCALE), x + 10, y + 8)
 
-      max_lines = [ (height - 44) / 16, 1 ].max
-      panel.lines.flat_map { |line| wrap(line, width) }.first(max_lines).each_with_index do |line, index|
-        image = draw_text(image, line, x + 10, y + 35 + (index * 16), size: 13)
+      max_lines = [ ((height - (panel.footer.present? ? 40 : 22) - 35) / PixelFont.line_height(TEXT_SCALE)) + 1, 1 ].max
+      panel.lines.flat_map { |line| PixelFont.wrap(line, max_width: text_width, scale: TEXT_SCALE) }.first(max_lines).each_with_index do |line, index|
+        image = draw_text(image, line, x + 10, y + 35 + (index * PixelFont.line_height(TEXT_SCALE)))
       end
 
-      draw_text(image, panel.footer, x + 10, y + height - 20, size: 11) if panel.footer.present?
+      if panel.footer.present?
+        footer = PixelFont.fit(panel.footer, max_width: text_width, scale: TEXT_SCALE)
+        image = draw_text(image, footer, x + 10, y + height - 20)
+      end
+
       image
     end
 
-    def draw_text(image, value, x, y, size:)
-      text = Vips::Image.text(value.to_s, font: "DejaVu Sans #{size}").invert
-      image.insert(text, x, y)
-    end
-
-    def wrap(line, width)
-      limit = [ (width - 20) / 7, 12 ].max
-      line.to_s.scan(/.{1,#{limit}}(?:\s+|\z)/).map(&:strip).reject(&:blank?).presence || [ line.to_s.truncate(limit) ]
+    def draw_text(image, value, x, y)
+      image.insert(PixelFont.image(value, scale: TEXT_SCALE), x, y)
     end
 
     def pixel_rows(image)

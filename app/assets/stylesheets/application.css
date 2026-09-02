@@ -13,7 +13,7 @@ a, .link-button { color: #111; font: inherit; text-decoration-thickness: 1px; te
 .flash { margin: 0; padding: .7rem 1rem; background: #111; color: #fff; }
 .flash--alert { background: #7a1515; }
 
-.dashboard-page { width: min(100% - 2rem, 1080px); margin: 1.5rem auto 3rem; }
+.dashboard-page { width: min(100% - 2rem, 800px); margin: 1.5rem auto 3rem; }
 .dashboard-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
 .dashboard-toolbar h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 2rem); }
 .dashboard-toolbar nav { display: flex; align-items: center; flex-wrap: wrap; gap: .9rem; }
@@ -46,10 +46,11 @@ a, .link-button { color: #111; font: inherit; text-decoration-thickness: 1px; te
   overflow: hidden;
 }
 
-.dashboard-panel h2 { margin: 0 0 .45rem; padding-bottom: .35rem; border-bottom: 1px solid #111; font-size: clamp(.72rem, 1.7vw, 1rem); }
-.panel-lines { min-height: 0; overflow: hidden; font-size: clamp(.62rem, 1.35vw, .82rem); line-height: 1.35; }
-.panel-lines p { margin: 0 0 .45rem; }
-.dashboard-panel footer { margin-top: auto; padding-top: .45rem; font-size: clamp(.55rem, 1.1vw, .7rem); }
+.dashboard-panel h2 { display: flex; height: 22px; margin: 0 0 .45rem; padding-bottom: .35rem; border-bottom: 1px solid #111; }
+.panel-lines { min-height: 0; overflow: hidden; line-height: 1; }
+.panel-lines p { height: 18px; margin: 0; }
+.dashboard-panel footer { display: flex; height: 14px; margin-top: auto; }
+.pixel-text { display: block; max-width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
 .panel-coordinate { margin: 0 0 .75rem; font-size: .75rem; }
 .panel-action { font-size: .8rem; }
 
